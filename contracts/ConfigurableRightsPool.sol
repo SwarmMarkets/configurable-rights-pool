@@ -162,7 +162,7 @@ contract ConfigurableRightsPool is PCToken, BalancerOwnable, BalancerReentrancyG
     // Function declarations
 
     /**
-     * @notice Construct a new Configurable Rights Pool (wrapper around BPool)
+     * @notice Initialize a new Configurable Rights Pool (wrapper around BPool)
      * @dev _initialTokens and _swapFee are only used for temporary storage between construction
      *      and create pool, and should not be used thereafter! _initialTokens is destroyed in
      *      createPool to prevent this, and _swapFee is kept in sync (defensively), but
@@ -171,14 +171,15 @@ contract ConfigurableRightsPool is PCToken, BalancerOwnable, BalancerReentrancyG
      * @param poolParams - struct containing pool parameters
      * @param rightsStruct - Set of permissions we are assigning to this smart pool
      */
-    constructor(
+    function initialize(
         address factoryAddress,
         PoolParams memory poolParams,
         RightsManager.Rights memory rightsStruct
     )
         public
-        PCToken(poolParams.poolTokenSymbol, poolParams.poolTokenName)
+        initializer
     {
+        __PCToken_init_unchained(poolParams.poolTokenSymbol, poolParams.poolTokenName);
         // We don't have a pool yet; check now or it will fail later (in order of likelihood to fail)
         // (and be unrecoverable if they don't have permission set to change it)
         // Most likely to fail, so check first

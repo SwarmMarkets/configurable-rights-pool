@@ -5,6 +5,7 @@ pragma solidity 0.6.12;
 
 import "../libraries/BalancerSafeMath.sol";
 import "../interfaces/IERC20.sol";
+import "@openzeppelin/contracts/proxy/Initializable.sol";
 
 // Contracts
 
@@ -14,7 +15,7 @@ import "../interfaces/IERC20.sol";
  * @author Balancer Labs
  * @title Highly opinionated token implementation
 */
-contract PCToken is IERC20 {
+contract PCToken is IERC20, Initializable{
     using BalancerSafeMath for uint;
 
     // State variables
@@ -41,10 +42,12 @@ contract PCToken is IERC20 {
     // Function declarations
 
     /**
-     * @notice Base token constructor
+     * @notice Base token initilize
      * @param tokenSymbol - the token symbol
+     * @param tokenName - the token name
      */
-    constructor (string memory tokenSymbol, string memory tokenName) public {
+    // solhint-disable-next-line func-name-mixedcase
+    function __PCToken_init_unchained(string memory tokenSymbol, string memory tokenName) internal initializer {
         _symbol = tokenSymbol;
         _name = tokenName;
     }
@@ -81,10 +84,10 @@ contract PCToken is IERC20 {
         /* In addition to the increase/decreaseApproval functions, could
            avoid the "approval race condition" by only allowing calls to approve
            when the current approval amount is 0
-        
+
            require(_allowance[msg.sender][spender] == 0, "ERR_RACE_CONDITION");
 
-           Some token contracts (e.g., KNC), already revert if you call approve 
+           Some token contracts (e.g., KNC), already revert if you call approve
            on a non-zero allocation. To deal with these, we use the SafeApprove library
            and safeApprove function when adding tokens to the pool.
         */
