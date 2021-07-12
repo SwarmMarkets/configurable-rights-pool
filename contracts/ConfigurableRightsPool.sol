@@ -122,7 +122,7 @@ contract ConfigurableRightsPool is PCToken, BalancerOwnable, BalancerReentrancyG
         uint oldCap,
         uint newCap
     );
-    
+
     event NewTokenCommitted(
         address indexed token,
         address indexed pool,
@@ -162,7 +162,7 @@ contract ConfigurableRightsPool is PCToken, BalancerOwnable, BalancerReentrancyG
     // Function declarations
 
     /**
-     * @notice Construct a new Configurable Rights Pool (wrapper around BPool)
+     * @notice Initialize a new Configurable Rights Pool (wrapper around BPool)
      * @dev _initialTokens and _swapFee are only used for temporary storage between construction
      *      and create pool, and should not be used thereafter! _initialTokens is destroyed in
      *      createPool to prevent this, and _swapFee is kept in sync (defensively), but
@@ -171,14 +171,15 @@ contract ConfigurableRightsPool is PCToken, BalancerOwnable, BalancerReentrancyG
      * @param poolParams - struct containing pool parameters
      * @param rightsStruct - Set of permissions we are assigning to this smart pool
      */
-    constructor(
+    function initialize(
         address factoryAddress,
         PoolParams memory poolParams,
         RightsManager.Rights memory rightsStruct
     )
         public
-        PCToken(poolParams.poolTokenSymbol, poolParams.poolTokenName)
+        initializer
     {
+        __PCToken_init_unchained(poolParams.poolTokenSymbol, poolParams.poolTokenName);
         // We don't have a pool yet; check now or it will fail later (in order of likelihood to fail)
         // (and be unrecoverable if they don't have permission set to change it)
         // Most likely to fail, so check first
@@ -207,7 +208,7 @@ contract ConfigurableRightsPool is PCToken, BalancerOwnable, BalancerReentrancyG
         // These default block time parameters can be overridden in createPool
         minimumWeightChangeBlockPeriod = DEFAULT_MIN_WEIGHT_CHANGE_BLOCK_PERIOD;
         addTokenTimeLockInBlocks = DEFAULT_ADD_TOKEN_TIME_LOCK_IN_BLOCKS;
-        
+
         gradualUpdate.startWeights = poolParams.tokenWeights;
         // Initializing (unnecessarily) for documentation - 0 means no gradual weight change has been initiated
         gradualUpdate.startBlock = 0;
@@ -328,7 +329,7 @@ contract ConfigurableRightsPool is PCToken, BalancerOwnable, BalancerReentrancyG
     {
         require (minimumWeightChangeBlockPeriodParam >= addTokenTimeLockInBlocksParam,
                 "ERR_INCONSISTENT_TOKEN_TIME_LOCK");
- 
+
         minimumWeightChangeBlockPeriod = minimumWeightChangeBlockPeriodParam;
         addTokenTimeLockInBlocks = addTokenTimeLockInBlocksParam;
 
@@ -385,7 +386,7 @@ contract ConfigurableRightsPool is PCToken, BalancerOwnable, BalancerReentrancyG
      * @param newWeights - final weights we want to get to. Note that the ORDER (and number) of
      *                     tokens can change if you have added or removed tokens from the pool
      *                     It ensures the counts are correct, but can't help you with the order!
-     *                     You can get the underlying BPool (it's public), and call 
+     *                     You can get the underlying BPool (it's public), and call
      *                     getCurrentTokens() to see the current ordering, if you're not sure
      * @param startBlock - when weights should start to change
      * @param endBlock - when weights will be at their final values
@@ -405,7 +406,7 @@ contract ConfigurableRightsPool is PCToken, BalancerOwnable, BalancerReentrancyG
         require(rights.canChangeWeights, "ERR_NOT_CONFIGURABLE_WEIGHTS");
          // Don't start this when we're in the middle of adding a new token
         require(!newToken.isCommitted, "ERR_PENDING_TOKEN_ADD");
-        
+
         // Library computes the startBlock, computes startWeights as the current
         // denormalized weights of the core pool tokens.
         SmartPoolManager.updateWeightsGradually(
@@ -523,7 +524,7 @@ contract ConfigurableRightsPool is PCToken, BalancerOwnable, BalancerReentrancyG
 
         // Delegate to library to save space
         SmartPoolManager.removeToken(IConfigurableRightsPool(address(this)), bPool, token);
-    } 
+    }
 
     /**
      * @notice Join a pool
@@ -783,7 +784,7 @@ contract ConfigurableRightsPool is PCToken, BalancerOwnable, BalancerReentrancyG
         _burnPoolShare(pAiAfterExitFee);
         _pushPoolShare(address(bFactory), exitFee);
         _pushUnderlying(tokenOut, msg.sender, tokenAmountOut);
-        
+
         return poolAmountIn;
     }
 
@@ -1021,7 +1022,7 @@ contract ConfigurableRightsPool is PCToken, BalancerOwnable, BalancerReentrancyG
 
     // Wrappers around corresponding core functions
 
-    // 
+    //
     function _mint(uint amount) internal override {
         super._mint(amount);
         require(varTotalSupply <= bspCap, "ERR_CAP_LIMIT_REACHED");
