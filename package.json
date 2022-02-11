@@ -24,7 +24,7 @@
     },
     "homepage": "https://github.com/SwarmMarkets/configurable-rights-pool#readme",
     "devDependencies": {
-        "@openzeppelin/contracts": "3.4.1",
+        "@openzeppelin/contracts": "4.4.2",
         "@openzeppelin/test-helpers": "^0.5.5",
         "chai": "^4.2.0",
         "coveralls": "^3.0.8",
